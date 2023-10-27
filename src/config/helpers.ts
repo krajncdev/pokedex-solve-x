@@ -26,7 +26,7 @@ export const uploadImage = async (file: File) => {
       key: apiKey,
     },
   });
-  return response.data as IUploadImageResponse;
+  return response.data.data as IUploadImageResponse;
 };
 
 export const customPokemonSchema = yup.object({

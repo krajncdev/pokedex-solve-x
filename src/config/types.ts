@@ -38,8 +38,6 @@ export interface IPokemon {
       name: string;
       url: string;
     };
-    is_hidden: boolean;
-    slot: number;
   }[];
 }
 
@@ -54,20 +52,9 @@ export interface IPokemonAll {
 }
 
 export interface IPokemonAbility {
-  pokemon: {
-    is_hidden: boolean;
-    slot: number;
-    pokemon: IPokemonAllResults;
-  }[];
   name: string;
-  is_main_series: boolean;
   id: number;
-  generation: {
-    name: string;
-    url: string;
-  };
   effect_entries: {
-    effect: string;
     short_effect: string;
     language: {
       name: string;
@@ -88,10 +75,23 @@ export interface IUploadImageResponse {
   url: string;
 }
 
-export interface ICustomPokemon {
+export interface IFormSubmitValues {
   name: string;
   description: string;
-  response: {
-    data: IUploadImageResponse;
-  };
+}
+
+export interface ICustomPokemonEntry {
+  name: string;
+  description: string;
+  url: string;
+}
+
+export interface ICustomPokemonAbility {
+  name: string;
+  description: string;
+}
+
+export interface IAllPokemonAbilities {
+  name: string;
+  effect: string;
 }

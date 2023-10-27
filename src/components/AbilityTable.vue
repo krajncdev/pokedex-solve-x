@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { getData } from '@/config/helpers';
-import type { IPokemonAbility } from '@/config/types';
+import type { IAllPokemonAbilities, IPokemonAbility } from '@/config/types';
 import { usePokemonStore } from '@/stores/pokemon';
-import { capitalize } from 'vue';
+import { capitalize, computed } from 'vue';
 import { onMounted, ref, watch } from 'vue';
 
 const store = usePokemonStore();
-const abilities = ref<IPokemonAbility[]>([]);
-const englishEffectIndex = ref<number[]>([]);
+const abilities = ref<IAllPokemonAbilities[]>([]);
 
 onMounted(async () => {
   fetchAbilities();
@@ -22,21 +21,37 @@ watch(
   }
 );
 
+// const abilitiesTest = computed(() => fetchAbilities());
+
 async function fetchAbilities() {
-  const allAbilities: IPokemonAbility[] = [];
+  const allAbilities: IAllPokemonAbilities[] = [];
   if (store.activePokemon) {
     for (const ability of store.activePokemon.abilities) {
-      const response = await getData(ability.ability.url);
-      allAbilities.push(response);
+      if (ability.ability.name === 'Custom') {
+        allAbilities.push({
+          name: ability.ability.name,
+          effect: ability.ability.url,
+        });
+      } else {
+        const response: IPokemonAbility = await getData(ability.ability.url);
+        const englishIndex = response.effect_entries.findIndex(
+          (item) => item.language.name === 'en'
+        );
+        if (englishIndex) {
+          allAbilities.push({
+            name: response.name,
+            effect: response.effect_entries[englishIndex].short_effect,
+          });
+        } else {
+          allAbilities.push({ name: response.name, effect: '/' });
+        }
+      }
     }
     abilities.value = allAbilities;
+    return allAbilities;
+  } else {
+    return [];
   }
-  englishEffectIndex.value = allAbilities.map((ability) => {
-    const englishIndex = ability.effect_entries.findIndex(
-      (item) => item.language.name === 'en'
-    );
-    return englishIndex >= 0 ? englishIndex : -1;
-  });
 }
 </script>
 
@@ -51,16 +66,12 @@ async function fetchAbilities() {
       </thead>
 
       <tbody>
-        <tr v-for="(ability, i) in abilities">
+        <tr v-for="ability in abilities">
           <td class="px-4">
             {{ capitalize(ability.name.split('-').join(' ')) }}
           </td>
           <td class="pr-4">
-            {{
-              ability.effect_entries.length === 0
-                ? '/'
-                : ability?.effect_entries[englishEffectIndex[i]]?.short_effect
-            }}
+            {{ ability.effect }}
           </td>
         </tr>
       </tbody>

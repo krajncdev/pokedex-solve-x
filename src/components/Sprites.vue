@@ -22,7 +22,6 @@ const allSprites = computed(() => {
   }
   return [];
 });
-console.log(allSprites.value);
 
 const handleButtonNext = () => {
   if (activeSpriteIndex.value === allSprites.value.length - 1)
@@ -38,13 +37,13 @@ const handleButtonPrevious = () => {
 </script>
 
 <template>
-  <div class="flex gap-2 absolute bottom-0 right-0 items-center">
+  <div class="flex absolute bottom-0 right-0 items-center">
     <button
       @click="handleButtonPrevious"
-      class="w-8 h-8 flex"
+      class="w-8 h-8 flex hover:scale-110 transition-all duration-150 ease-in active:scale-100"
       :class="
         allSprites.length > 1
-          ? 'fill-black'
+          ? 'fill-orange'
           : 'fill-black/20 cursor-not-allowed'
       "
     >
@@ -52,7 +51,7 @@ const handleButtonPrevious = () => {
     </button>
 
     <div
-      class="border-solid border-2 border-black rounded-full h-12 w-12 overflow-hidden flex justify-center items-center"
+      class="border-solid border-2 border-black rounded-full h-16 w-16 overflow-hidden flex justify-center items-center"
     >
       <p v-if="allSprites.length === 0">?</p>
       <img
@@ -65,10 +64,10 @@ const handleButtonPrevious = () => {
 
     <button
       @click="handleButtonNext"
-      class="w-8 h-8 rotate-180 flex fill-black"
+      class="w-8 h-8 rotate-180 flex hover:scale-110 transition-all duration-150 ease-in active:scale-100"
       :class="
         allSprites.length > 1
-          ? 'fill-black'
+          ? 'fill-orange'
           : 'fill-black/20 cursor-not-allowed'
       "
     >

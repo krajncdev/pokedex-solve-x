@@ -9,19 +9,26 @@ import CustomizePokemon from './components/CustomizePokemon.vue';
 
 const store = usePokemonStore();
 
-const handleRandomButtonClick = async () => {
-  const randomNumber = store.allPokemon
-    ? Math.floor(Math.random() * store.allPokemon?.count) + 1
-    : 0;
-  const response = await store.changeActivePokemon(
-    `https://pokeapi.co/api/v2/pokemon/${randomNumber}`
+const handleRandomButtonClick = () => {
+  const lastElement =
+    store.allPokemon?.results[store.allPokemon.results.length - 1];
+  const lastElementIndex = Number(
+    lastElement?.url.split('/')[lastElement.url.split('/').length - 2]
   );
-  if (response === -1) handleRandomButtonClick();
-  store.closeIsSelectOpen();
-};
-
-const testFunction = () => {
-  console.log('button', store.customPokemon);
+  const randomNumber = lastElementIndex
+    ? Math.floor(Math.random() * lastElementIndex) + 1
+    : 0;
+  const link = `https://pokeapi.co/api/v2/pokemon/${randomNumber}`;
+  const check: boolean | undefined = store.allPokemon?.results.some((p) =>
+    p.url.includes(link)
+  );
+  if (check) {
+    store.changeActivePokemon(link);
+    store.closeIsSelectOpen();
+    return 0;
+  }
+  handleRandomButtonClick();
+  // console.log('bad link: ', link);
 };
 
 onMounted(async () => {
@@ -35,7 +42,7 @@ onMounted(async () => {
       <header class="flex gap-4">
         <Search />
         <button
-          class="h-10 w-10 flex items-center justify-center rounded-md border-2 border-black border-solid"
+          class="h-10 w-10 flex items-center justify-center rounded-md border-2 border-black border-solid fill-white bg-orange"
           @click="handleRandomButtonClick"
         >
           <RandomIcon />
@@ -44,13 +51,6 @@ onMounted(async () => {
       <main>
         <ActivePokemon />
         <CustomizePokemon />
-
-        <button
-          @click="testFunction()"
-          class="border-2 border-black border-solid px-4 py-1.5 rounded-md"
-        >
-          Test custom pokemon
-        </button>
       </main>
     </div>
   </div>

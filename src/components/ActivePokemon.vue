@@ -45,17 +45,17 @@ const store = usePokemonStore();
     </div>
 
     <div>
-      <h1 class="text-2xl font-semibold">
+      <h1 class="text-2xl font-semibold mt-4">
         {{
           store.activePokemon
             ? capitalize(store.activePokemon.name.split('-').join(' '))
             : 'Pokemon name'
         }}
       </h1>
-      <ul class="flex gap-2 mt-2" v-if="store.activePokemon">
+      <ul class="flex gap-2 mt-6" v-if="store.activePokemon">
         <li
           v-for="type in store.activePokemon.types"
-          class="border-2 border-solid border-black rounded-md px-2 py-1"
+          class="border-2 border-solid border-orange rounded-md px-2 py-1"
         >
           {{ capitalize(type.type.name) }}
         </li>

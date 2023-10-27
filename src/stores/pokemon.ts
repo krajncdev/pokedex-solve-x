@@ -2,7 +2,7 @@ import { ref, type Ref } from 'vue';
 import { defineStore } from 'pinia';
 import { getAllPokemon, getData } from '@/config/helpers';
 import type {
-  ICustomPokemon,
+  ICustomPokemonEntry,
   IPokemon,
   IPokemonAll,
   IPokemonAllResults,
@@ -12,10 +12,10 @@ export const usePokemonStore = defineStore('pokemon', () => {
   const allPokemon: Ref<IPokemonAll | null> = ref(null);
   const showedPokemon: Ref<IPokemonAllResults[] | undefined> = ref([]);
   const activePokemon: Ref<IPokemon | null> = ref(null);
-  const customPokemon: Ref<ICustomPokemon[] | null> = ref([]);
+  const customPokemon: Ref<IPokemon[] | null> = ref([]);
   const isSelectOpen = ref(false);
 
-  const addCustomPokemon = (pokemon: ICustomPokemon) => {
+  const addCustomPokemon = (pokemon: IPokemon) => {
     customPokemon.value?.push(pokemon);
   };
 
@@ -40,10 +40,66 @@ export const usePokemonStore = defineStore('pokemon', () => {
 
   const changeActivePokemon = async (url: string) => {
     try {
-      activePokemon.value = await getData(url);
+      const response: IPokemon = await getData(url);
+      const foundPokemonMatch = customPokemon.value?.find(
+        (pokemon) => pokemon.id === response.id
+      );
+      console.log(customPokemon.value);
+      if (foundPokemonMatch) {
+        activePokemon.value = foundPokemonMatch;
+      } else {
+        activePokemon.value = response;
+      }
     } catch (err) {
       console.error('Error: not a valid link');
       return -1;
+    }
+  };
+
+  const editActivePokemon = (customPokemonEntry: ICustomPokemonEntry) => {
+    // tu se updata search
+    allPokemon.value?.results.map((pokemon, i) => {
+      if (pokemon.name === activePokemon.value?.name) {
+        if (allPokemon.value) {
+          allPokemon.value.results[i].name = customPokemonEntry.name;
+        }
+      }
+    });
+
+    if (activePokemon.value) {
+      activePokemon.value = {
+        ...activePokemon.value,
+        name: customPokemonEntry.name,
+      }; // to triggera spremembo v activePokemonu in omogoči lažje spremljanje tega state-a
+      activePokemon.value.sprites.other['official-artwork'].front_default =
+        customPokemonEntry.url;
+      const customAbilityEntry = {
+        ability: {
+          name: 'Custom',
+          url: customPokemonEntry.description,
+        },
+      };
+      const customIndex = activePokemon.value.abilities.findIndex(
+        (ability) => ability.ability.name === 'Custom'
+      );
+      if (customIndex === -1) {
+        activePokemon.value.abilities.push(customAbilityEntry);
+      } else {
+        activePokemon.value.abilities[customIndex].ability.url =
+          customPokemonEntry.description;
+      }
+      if (customPokemon.value) {
+        const indexOfPokemon = customPokemon.value.findIndex((item) => {
+          if (activePokemon.value) {
+            return item.id === activePokemon.value.id;
+          }
+        });
+        if (indexOfPokemon === -1) {
+          addCustomPokemon(activePokemon.value);
+        } else {
+          customPokemon.value[indexOfPokemon] = activePokemon.value;
+        }
+      }
     }
   };
 
@@ -68,5 +124,6 @@ export const usePokemonStore = defineStore('pokemon', () => {
     resetShowedPokemon,
     openIsSelectOpen,
     closeIsSelectOpen,
+    editActivePokemon,
   };
 });

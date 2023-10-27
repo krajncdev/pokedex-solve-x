@@ -7,7 +7,7 @@ import {
 import { ref } from 'vue';
 import { Form as VeeForm, Field, ErrorMessage } from 'vee-validate';
 import { usePokemonStore } from '@/stores/pokemon';
-import type { ICustomPokemon } from '@/config/types';
+import type { ICustomPokemonEntry, IFormSubmitValues } from '@/config/types';
 import Spinner from './icons/Spinner.vue';
 
 const store = usePokemonStore();
@@ -19,32 +19,48 @@ const isSubmitLoading = ref<boolean>(false);
 
 const handleFileUpload = async (event: any) => {
   // nisem nasel typescript podpore za upload event
-  uploadedImage.value = event?.target?.files[0];
-  if (uploadedImage.value && uploadedImage.value.size > 1024 * 1024) {
+  const file = event.target?.files[0];
+  const allowedFileTypes = [
+    'image/png',
+    'image/svg',
+    'image/jpg',
+    'image/jpeg',
+  ];
+  if (file.size > 1024 * 1024) {
     console.log('file too big');
     imageErrorMsg.value =
       'Uploded img is too big (1MB max)! Click to choose again';
     return -1;
   } // ce je datoteka vecja kot 1MB, se nastavi error msg na file is too big
+
+  if (!allowedFileTypes.includes(file.type)) {
+    console.log('file type not allowed');
+    imageErrorMsg.value =
+      'Uploaded file type not allowed. Click to choose again';
+    return -1;
+  }
+
+  uploadedImage.value = file;
   imageErrorMsg.value !== '' ? (imageErrorMsg.value = '') : 0;
-  imageBase64.value = await createBase64Image(event.target?.files[0]);
+  imageBase64.value = await createBase64Image(file);
 };
 
 const handleFormSubmit = async (values: any, { resetForm }: any) => {
   try {
     if (uploadedImage.value) {
-      isSubmitLoading.value = true;
+      isSubmitLoading.value = true; // naredi loading
       const response = await uploadImage(uploadedImage.value);
-      isSubmitLoading.value = false;
-      const customPokemon: ICustomPokemon = {
-        ...values,
-        response,
-      };
-      store.addCustomPokemon(customPokemon);
-
+      isSubmitLoading.value = false; // po tem ko se konca se loader konca
       imageErrorMsg.value !== '' ? (imageErrorMsg.value = '') : 0; // ce me kaksen error, ki se obstaja ga tukaj zbrisemo, saj je vse slo skozi
       uploadedImage.value = null;
       imageBase64.value = '';
+      const customPokemon: ICustomPokemonEntry = {
+        name: values.name,
+        description: values.description,
+        url: response.display_url,
+      };
+      console.log(response);
+      store.editActivePokemon(customPokemon);
       resetForm();
     } else {
       imageErrorMsg.value =
@@ -57,7 +73,7 @@ const handleFormSubmit = async (values: any, { resetForm }: any) => {
 </script>
 
 <template>
-  <section class="mt-10">
+  <section class="mt-10" v-if="store.activePokemon">
     <h2 class="text-2xl font-semibold">Customize the POKEMON</h2>
     <div class="grid grid-cols-2 gap-10 mt-8">
       <div class="flex justify-center ml-20">
