@@ -33,7 +33,7 @@ export const usePokemonStore = defineStore('pokemon', () => {
 
   const changeShowedPokemon = (input: string) => {
     const filtered = allPokemon.value?.results.filter((pokemon) =>
-      pokemon?.name.startsWith(input)
+      pokemon?.name.toLowerCase().startsWith(input.toLowerCase())
     );
     showedPokemon.value = filtered;
   };
