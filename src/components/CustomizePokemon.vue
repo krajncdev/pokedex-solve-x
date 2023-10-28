@@ -26,19 +26,18 @@ const handleFileUpload = async (event: any) => {
     'image/jpg',
     'image/jpeg',
   ];
+  if (!allowedFileTypes.includes(file.type)) {
+    console.log('file type not allowed');
+    imageErrorMsg.value =
+      'Uploaded file type is not allowed. Click to choose again';
+    return -1;
+  }
   if (file.size > 1024 * 1024) {
     console.log('file too big');
     imageErrorMsg.value =
       'Uploded img is too big (1MB max)! Click to choose again';
     return -1;
   } // ce je datoteka vecja kot 1MB, se nastavi error msg na file is too big
-
-  if (!allowedFileTypes.includes(file.type)) {
-    console.log('file type not allowed');
-    imageErrorMsg.value =
-      'Uploaded file type not allowed. Click to choose again';
-    return -1;
-  }
 
   uploadedImage.value = file;
   imageErrorMsg.value !== '' ? (imageErrorMsg.value = '') : 0;
